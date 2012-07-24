@@ -1,0 +1,65 @@
+grammar Y
+
+  rule topmost
+    expression*
+    {
+      def bnf
+        self.elements.each {
+          |p| 
+          puts "#{p.rule_name.text_value} : #{p.rewrite_list}" 
+        }
+      end
+    }
+  end
+  
+  rule expression
+    white_space? rule_name white_space? ':' rewrite_list ';' space?
+  end
+  
+  rule rewrite_list
+    rule_list:(space? rewrite_name)* space?
+    {
+      def to_s
+        rule_list.elements.collect {|rew| rew.rewrite_name.text_value }.join(" ").gsub("| ", "|\n\t")
+      end
+    }
+  end
+  
+  rule rule_name
+    [a-zA-Z] [a-zA-Z0-9_]*
+  end
+  
+  rule rewrite_name
+    identifier / quoted_identifier
+  end
+  
+  rule identifier
+    [%|a-zA-Z] [a-zA-Z0-9_]*
+  end
+  
+  rule quoted_identifier
+    '\'' [^\']* '\''
+  end
+
+  rule space
+    (white_space / c_block)* 
+    {
+      def value
+        nil
+      end
+    }
+  end
+  
+  rule white_space
+    [\s]+
+  end
+  
+  rule c_block
+    '{' non_curly (c_block non_curly)* '}'
+  end
+  
+  rule non_curly
+    [^{}]*
+  end
+   
+end
